@@ -1,70 +1,80 @@
-# Getting Started with Create React App
+<div align="center">
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![banner](./banner.svg)
 
-## Available Scripts
+</div>
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## Quick Start
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```bash
+git clone https://github.com/roshaldsouza/ai-voice-interview-coach
+npm install
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+# Get free key → console.groq.com (no credit card)
+echo "REACT_APP_GROQ_API_KEY=gsk_..." > .env
 
-### `npm test`
+npm start  # Chrome or Edge required
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## How It Works
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+🎯 Pick Set  →  🎙 Speak  →  🤖 AI Scores  →  📊 Improve
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Your answer is transcribed live via **Web Speech API**, then sent to **Llama 3.3-70b via Groq** which returns structured scores + a rewritten better answer — in under 2 seconds.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```json
+{
+  "score": 8,  "relevance": 9,  "clarity": 7,  "confidence": 8,
+  "strengths":    ["Quantified impact (70%)", "Technical depth"],
+  "improvements": ["Add team context", "Mention business impact"],
+  "betterAnswer": "I led a performance optimization that reduced..."
+}
+```
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Features
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+| | |
+|---|---|
+| 🎙 **Voice Recording** | Web Speech API — zero install, zero cost |
+| 🤖 **AI Scoring** | Llama 3 via Groq free tier, ~1s response |
+| 📊 **Score Rings** | Animated SVG — Clarity, Relevance, Confidence |
+| 🚫 **Filler Detection** | Tracks "um", "uh", "like", "basically"... |
+| 📈 **Dashboard** | Streak tracker, score trends, session history |
+| 📄 **PDF Export** | Full session report, no backend needed |
+| 🎯 **Question Sets** | Frontend · Behavioral · System Design · Custom |
+| 💾 **localStorage** | History persists locally, zero server |
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+---
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Stack
 
-## Learn More
+`React 18` · `Groq API` · `Llama 3.3-70b` · `Web Speech API` · `jsPDF` · `localStorage` · `Vercel`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Roadmap
 
-### Code Splitting
+- [x] Voice recording + live transcript
+- [x] Groq AI scoring — 4 dimensions
+- [x] Progress dashboard + streak tracker
+- [x] PDF export report
+- [x] Custom question sets builder
+- [ ] TTS playback for better answers
+- [ ] Shareable result card
+- [ ] Company-specific question packs
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+<div align="center">
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+built by [roshaldsouza](https://github.com/roshaldsouza) · MIT · ⭐ if it helped you land a job
 
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+</div>

@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 180" width="820" height="180">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono');
+      .bg { fill: #020a02; }
+      .green { fill: #39ff14; }
+      .white { fill: #f0fff0; }
+      .dim { fill: #1a7a0a; }
+      .mid { fill: #22c40a; }
+
+      @keyframes blink { 0%,49%{opacity:1} 50%,99%{opacity:0} }
+      @keyframes flicker { 0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.7} 94%{opacity:1} }
+      @keyframes wave1 { 0%{height:4px;y:18px} 100%{height:28px;y:4px} }
+      @keyframes wave2 { 0%{height:20px;y:10px} 100%{height:8px;y:22px} }
+      @keyframes wave3 { 0%{height:12px;y:16px} 100%{height:26px;y:3px} }
+      @keyframes wave4 { 0%{height:28px;y:3px} 100%{height:6px;y:21px} }
+      @keyframes wave5 { 0%{height:8px;y:20px} 100%{height:22px;y:9px} }
+      @keyframes wave6 { 0%{height:16px;y:12px} 100%{height:14px;y:13px} }
+      @keyframes wave7 { 0%{height:24px;y:6px} 100%{height:10px;y:18px} }
+      @keyframes scandown { 0%{transform:translateY(-10px);opacity:0.6} 100%{transform:translateY(180px);opacity:0} }
+      @keyframes ringfill { from{stroke-dashoffset:88} to{stroke-dashoffset:22} }
+      @keyframes ringfill2 { from{stroke-dashoffset:88} to{stroke-dashoffset:9} }
+      @keyframes ringfill3 { from{stroke-dashoffset:88} to{stroke-dashoffset:35} }
+      @keyframes ringfill4 { from{stroke-dashoffset:88} to{stroke-dashoffset:22} }
+      @keyframes fadeInUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+      @keyframes glow { 0%,100%{filter:drop-shadow(0 0 6px #39ff14)} 50%{filter:drop-shadow(0 0 2px #39ff14)} }
+
+      .title { font-family: monospace; font-size: 28px; font-weight: bold; animation: flicker 6s infinite, glow 3s ease-in-out infinite; }
+      .sub { font-family: monospace; font-size: 11px; animation: fadeInUp 1s ease 0.5s both; }
+      .cursor { animation: blink 1s step-end infinite; }
+      .scanbeam { animation: scandown 4s linear infinite; }
+      .wb1 { animation: wave1 0.35s ease-in-out infinite alternate; }
+      .wb2 { animation: wave2 0.42s ease-in-out infinite alternate; }
+      .wb3 { animation: wave3 0.50s ease-in-out infinite alternate; }
+      .wb4 { animation: wave4 0.38s ease-in-out infinite alternate; }
+      .wb5 { animation: wave5 0.44s ease-in-out infinite alternate; }
+      .wb6 { animation: wave6 0.36s ease-in-out infinite alternate; }
+      .wb7 { animation: wave7 0.52s ease-in-out infinite alternate; }
+      .r1 { animation: ringfill 1.2s ease 0.3s both; }
+      .r2 { animation: ringfill2 1.2s ease 0.5s both; }
+      .r3 { animation: ringfill3 1.2s ease 0.7s both; }
+      .r4 { animation: ringfill4 1.2s ease 0.9s both; }
+    </style>
+
+    <!-- scanline pattern -->
+    <pattern id="scanlines" x="0" y="0" width="1" height="4" patternUnits="userSpaceOnUse">
+      <rect width="820" height="1" fill="rgba(0,0,0,0.3)"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="820" height="180" class="bg"/>
+  <rect x="1" y="1" width="818" height="178" fill="none" stroke="#1a7a0a" stroke-width="1"/>
+
+  <!-- Scanlines overlay -->
+  <rect width="820" height="180" fill="url(#scanlines)" opacity="0.5"/>
+
+  <!-- Scan beam -->
+  <rect class="scanbeam" x="0" y="0" width="820" height="2" fill="rgba(57,255,20,0.15)" rx="1"/>
+
+  <!-- LEFT: Title block -->
+  <text x="24" y="52" class="title green">🎙 AI VOICE</text>
+  <text x="24" y="84" class="title white">INTERVIEW COACH</text>
+
+  <text x="24" y="106" class="sub dim">// practice · get ai feedback · track progress</text>
+
+  <!-- badges row -->
+  <g transform="translate(24, 118)" style="animation: fadeInUp 1s ease 0.8s both">
+    <rect width="72" height="16" rx="2" fill="rgba(57,255,20,0.08)" stroke="#1a7a0a" stroke-width="1"/>
+    <text x="36" y="11" font-family="monospace" font-size="9" fill="#39ff14" text-anchor="middle">⚛ REACT 18</text>
+    <rect x="78" width="80" height="16" rx="2" fill="rgba(57,255,20,0.08)" stroke="#1a7a0a" stroke-width="1"/>
+    <text x="118" y="11" font-family="monospace" font-size="9" fill="#22c40a" text-anchor="middle">🤖 GROQ + LLAMA 3</text>
+    <rect x="164" width="56" height="16" rx="2" fill="rgba(240,255,240,0.06)" stroke="rgba(240,255,240,0.2)" stroke-width="1"/>
+    <text x="192" y="11" font-family="monospace" font-size="9" fill="#f0fff0" text-anchor="middle">✓ $0 FREE</text>
+  </g>
+
+  <!-- Divider -->
+  <line x1="320" y1="16" x2="320" y2="164" stroke="#1a7a0a" stroke-width="1"/>
+
+  <!-- MIDDLE: Waveform + transcript -->
+  <text x="336" y="30" font-family="monospace" font-size="9" fill="#1a7a0a">// LIVE RECORDING</text>
+
+  <!-- Mic icon -->
+  <rect x="336" y="38" width="34" height="34" fill="rgba(57,255,20,0.05)" stroke="#39ff14" stroke-width="1"/>
+  <text x="353" y="60" font-family="monospace" font-size="18" fill="#39ff14" text-anchor="middle">⏹</text>
+
+  <!-- REC label -->
+  <text x="353" y="82" font-family="monospace" font-size="8" fill="#ff5555" text-anchor="middle">⏺ REC</text>
+
+  <!-- Waveform bars -->
+  <g transform="translate(380, 38)">
+    <rect class="wb1" x="0"  y="10" width="4" height="14" fill="#39ff14" rx="1" style="filter:drop-shadow(0 0 2px #39ff14)"/>
+    <rect class="wb2" x="7"  y="6"  width="4" height="22" fill="#39ff14" rx="1" style="filter:drop-shadow(0 0 2px #39ff14)"/>
+    <rect class="wb3" x="14" y="8"  width="4" height="18" fill="#22c40a" rx="1"/>
+    <rect class="wb4" x="21" y="3"  width="4" height="28" fill="#39ff14" rx="1" style="filter:drop-shadow(0 0 2px #39ff14)"/>
+    <rect class="wb5" x="28" y="12" width="4" height="10" fill="#22c40a" rx="1"/>
+    <rect class="wb6" x="35" y="8"  width="4" height="18" fill="#39ff14" rx="1"/>
+    <rect class="wb7" x="42" y="5"  width="4" height="24" fill="#39ff14" rx="1" style="filter:drop-shadow(0 0 2px #39ff14)"/>
+  </g>
+
+  <!-- Transcript lines -->
+  <text x="336" y="100" font-family="monospace" font-size="9" fill="#f0fff0">I led a React optimization at my last role.</text>
+  <text x="336" y="113" font-family="monospace" font-size="9" fill="#f0fff0">Used React.memo + react-window — cut</text>
+  <text x="336" y="126" font-family="monospace" font-size="9" fill="#f0fff0">render time by <tspan fill="#39ff14" style="filter:drop-shadow(0 0 4px #39ff14)">70%</tspan>.<tspan class="cursor" fill="#39ff14">█</tspan></text>
+  <text x="336" y="142" font-family="monospace" font-size="8" fill="#1a7a0a">// 87 words · 0 fillers · good length ✓</text>
+
+  <!-- Divider 2 -->
+  <line x1="560" y1="16" x2="560" y2="164" stroke="#1a7a0a" stroke-width="1"/>
+
+  <!-- RIGHT: Score rings -->
+  <text x="576" y="30" font-family="monospace" font-size="9" fill="#1a7a0a">// AI SCORES</text>
+
+  <!-- Ring 1 - Overall -->
+  <g transform="translate(586, 42)">
+    <circle cx="18" cy="18" r="14" fill="none" stroke="#1a3a0a" stroke-width="3"/>
+    <circle cx="18" cy="18" r="14" fill="none" stroke="#39ff14" stroke-width="3"
+      stroke-dasharray="88" stroke-dashoffset="88" stroke-linecap="square"
+      transform="rotate(-90 18 18)" class="r1"
+      style="filter:drop-shadow(0 0 3px #39ff14)"/>
+    <text x="18" y="23" font-family="monospace" font-size="11" font-weight="bold" fill="#f0fff0" text-anchor="middle">8</text>
+  </g>
+  <text x="604" y="76" font-family="monospace" font-size="8" fill="#1a7a0a" text-anchor="middle">OVERALL</text>
+
+  <!-- Ring 2 - Relevance -->
+  <g transform="translate(632, 42)">
+    <circle cx="18" cy="18" r="14" fill="none" stroke="#1a3a0a" stroke-width="3"/>
+    <circle cx="18" cy="18" r="14" fill="none" stroke="#ccff99" stroke-width="3"
+      stroke-dasharray="88" stroke-dashoffset="88" stroke-linecap="square"
+      transform="rotate(-90 18 18)" class="r2"
+      style="filter:drop-shadow(0 0 3px #ccff99)"/>
+    <text x="18" y="23" font-family="monospace" font-size="11" font-weight="bold" fill="#f0fff0" text-anchor="middle">9</text>
+  </g>
+  <text x="650" y="76" font-family="monospace" font-size="8" fill="#1a7a0a" text-anchor="middle">RELEV.</text>
+
+  <!-- Ring 3 - Clarity -->
+  <g transform="translate(678, 42)">
+    <circle cx="18" cy="18" r="14" fill="none" stroke="#1a3a0a" stroke-width="3"/>
+    <circle cx="18" cy="18" r="14" fill="none" stroke="#22c40a" stroke-width="3"
+      stroke-dasharray="88" stroke-dashoffset="88" stroke-linecap="square"
+      transform="rotate(-90 18 18)" class="r3"
+      style="filter:drop-shadow(0 0 3px #22c40a)"/>
+    <text x="18" y="23" font-family="monospace" font-size="11" font-weight="bold" fill="#f0fff0" text-anchor="middle">7</text>
+  </g>
+  <text x="696" y="76" font-family="monospace" font-size="8" fill="#1a7a0a" text-anchor="middle">CLARITY</text>
+
+  <!-- Ring 4 - Confidence -->
+  <g transform="translate(724, 42)">
+    <circle cx="18" cy="18" r="14" fill="none" stroke="#1a3a0a" stroke-width="3"/>
+    <circle cx="18" cy="18" r="14" fill="none" stroke="#39ff14" stroke-width="3"
+      stroke-dasharray="88" stroke-dashoffset="88" stroke-linecap="square"
+      transform="rotate(-90 18 18)" class="r4"
+      style="filter:drop-shadow(0 0 3px #39ff14)"/>
+    <text x="18" y="23" font-family="monospace" font-size="11" font-weight="bold" fill="#f0fff0" text-anchor="middle">8</text>
+  </g>
+  <text x="742" y="76" font-family="monospace" font-size="8" fill="#1a7a0a" text-anchor="middle">CONF.</text>
+
+  <!-- Feedback lines -->
+  <text x="576" y="96"  font-family="monospace" font-size="9" fill="#39ff14">✓ Quantified impact (70%)</text>
+  <text x="576" y="109" font-family="monospace" font-size="9" fill="#39ff14">✓ Technical depth shown</text>
+  <text x="576" y="122" font-family="monospace" font-size="9" fill="#ccff99">↑ Add team context</text>
+  <text x="576" y="135" font-family="monospace" font-size="9" fill="#ccff99">↑ Mention biz impact</text>
+  <text x="576" y="152" font-family="monospace" font-size="8" fill="#1a7a0a">// llama-3.3-70b · ~1s response</text>
+</svg>
