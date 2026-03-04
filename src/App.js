@@ -1,16 +1,71 @@
 import { useState, useRef, useEffect } from "react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const INTERVIEW_QUESTIONS = [
-  "Tell me about yourself and your background.",
-  "What is your greatest strength as a frontend developer?",
-  "Describe a challenging project you worked on and how you overcame obstacles.",
-  "Why do you want to work at this company?",
-  "Where do you see yourself in 5 years?",
-  "How do you handle tight deadlines and pressure?",
-  "What's your experience with React and modern JavaScript?",
-  "Tell me about a time you worked in a team and faced conflict.",
-];
+const QUESTION_SETS = {
+  frontend: {
+    label: "Frontend Developer",
+    icon: "💻",
+    color: "#00d4aa",
+    questions: [
+      "Tell me about yourself and your background.",
+      "What is your greatest strength as a frontend developer?",
+      "Describe a challenging project you worked on and how you overcame obstacles.",
+      "Why do you want to work at this company?",
+      "Where do you see yourself in 5 years?",
+      "How do you handle tight deadlines and pressure?",
+      "What's your experience with React and modern JavaScript?",
+      "Tell me about a time you worked in a team and faced conflict.",
+    ],
+  },
+  behavioral: {
+    label: "Behavioral",
+    icon: "🧠",
+    color: "#7c6dfa",
+    questions: [
+      "Tell me about a time you failed and what you learned from it.",
+      "Describe a situation where you had to work with a difficult teammate.",
+      "Give an example of when you showed leadership.",
+      "Tell me about a time you went above and beyond for a project.",
+      "How do you handle receiving critical feedback?",
+      "Describe a time you had to make a tough decision under pressure.",
+      "Tell me about a time you had to learn something quickly.",
+      "How do you prioritize tasks when everything feels urgent?",
+    ],
+  },
+  system: {
+    label: "System Design",
+    icon: "🏗️",
+    color: "#00b8d9",
+    questions: [
+      "How would you design a URL shortener like bit.ly?",
+      "Walk me through designing a news feed like Twitter's timeline.",
+      "How would you build a real-time chat application?",
+      "Design a file storage system like Google Drive.",
+      "How do you approach performance optimization in a large React app?",
+      "How would you handle state management in a complex application?",
+      "Explain how you would design a component library from scratch.",
+      "How would you implement infinite scrolling efficiently?",
+    ],
+  },
+  custom: {
+    label: "My Custom Set",
+    icon: "✏️",
+    color: "#ffa500",
+    questions: [],
+  },
+};
+
+const QUESTIONS_STORAGE_KEY = "voice_coach_custom_questions";
+
+function loadCustomQuestions() {
+  try {
+    const raw = localStorage.getItem(QUESTIONS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+function saveCustomQuestions(qs) {
+  try { localStorage.setItem(QUESTIONS_STORAGE_KEY, JSON.stringify(qs)); } catch {}
+}
 
 const FILLER_WORDS = ["um", "uh", "like", "you know", "basically", "literally", "actually", "so", "right"];
 const STORAGE_KEY = "voice_coach_history";
@@ -88,6 +143,149 @@ function countFillerWords(text) {
 function wordCount(text) { return text.trim().split(/\s+/).filter(Boolean).length; }
 function formatTime(s) { return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; }
 function scoreColor(s) { return s >= 8 ? "#00d4aa" : s >= 6 ? "#ffa500" : "#ff4757"; }
+
+// PDF Export
+async function exportToPDF(history, streak, avgScore) {
+  if (!window.jspdf) {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      script.onload = resolve; script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, margin = 18, col = W - margin * 2;
+  let y = 0;
+  const addPage = () => { doc.addPage(); y = 20; };
+  const checkPage = (n = 20) => { if (y + n > 275) addPage(); };
+
+  // Header
+  doc.setFillColor(9, 13, 26); doc.rect(0, 0, W, 42, 'F');
+  doc.setTextColor(0, 212, 170); doc.setFontSize(22); doc.setFont('helvetica', 'bold');
+  doc.text('AI Voice Interview Coach', margin, 18);
+  doc.setFontSize(10); doc.setTextColor(136, 153, 187); doc.setFont('helvetica', 'normal');
+  doc.text('Report: ' + new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), margin, 27);
+  doc.text('Sessions: ' + history.length + '  |  Avg: ' + avgScore + '  |  Streak: ' + streak + 'd', margin, 34);
+  y = 52;
+
+  // Stats bar
+  doc.setFillColor(20, 26, 46); doc.roundedRect(margin, y, col, 28, 3, 3, 'F');
+  const best = history.length ? Math.max(...history.map(h => h.score || 0)) : 0;
+  const totalFillers = history.reduce((a, b) => a + Object.values(b.fillers || {}).reduce((x, yy) => x + yy, 0), 0);
+  const stats = [
+    { label: 'Sessions', value: history.length },
+    { label: 'Avg Score', value: avgScore },
+    { label: 'Best Score', value: best },
+    { label: 'Streak', value: streak + 'd' },
+    { label: 'Fillers', value: totalFillers }
+  ];
+  stats.forEach((s, i) => {
+    const x = margin + (col / stats.length) * i + (col / stats.length) / 2;
+    doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 212, 170);
+    doc.text(String(s.value), x, y + 13, { align: 'center' });
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(136, 153, 187);
+    doc.text(s.label.toUpperCase(), x, y + 22, { align: 'center' });
+  });
+  y += 38;
+
+  // Score by Question
+  const byQ = {};
+  history.forEach(h => { if (!byQ[h.question]) byQ[h.question] = []; byQ[h.question].push(h.score || 0); });
+  if (Object.keys(byQ).length) {
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(232, 237, 248);
+    doc.text('Score by Question', margin, y); y += 6;
+    Object.entries(byQ).forEach(([q, scores]) => {
+      checkPage(14);
+      const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(180, 190, 210);
+      doc.text(q.length > 70 ? q.slice(0, 67) + '...' : q, margin, y + 4);
+      doc.setFillColor(30, 37, 53); doc.roundedRect(margin, y + 6, col - 20, 4, 1, 1, 'F');
+      const rgb = avg >= 8 ? [0, 212, 170] : avg >= 6 ? [255, 165, 0] : [255, 71, 87];
+      doc.setFillColor(...rgb);
+      const bw = (avg / 10) * (col - 20);
+      if (bw > 0) doc.roundedRect(margin, y + 6, bw, 4, 1, 1, 'F');
+      doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(...rgb);
+      doc.text(avg.toFixed(1), W - margin, y + 10, { align: 'right' });
+      y += 14;
+    });
+    y += 6;
+  }
+
+  // Session Details
+  checkPage(20);
+  doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(232, 237, 248);
+  doc.text('Session Details', margin, y); y += 8;
+
+  [...history].reverse().forEach((s, idx) => {
+    checkPage(60);
+    doc.setFillColor(20, 26, 46); doc.roundedRect(margin, y, col, 10, 2, 2, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 212, 170);
+    doc.text('#' + (history.length - idx), margin + 3, y + 6.5);
+    doc.setTextColor(180, 190, 210);
+    doc.text(new Date(s.date).toLocaleString(), margin + 12, y + 6.5);
+    const sc = s.score >= 8 ? [0,212,170] : s.score >= 6 ? [255,165,0] : [255,71,87];
+    doc.setTextColor(...sc); doc.setFont('helvetica', 'bold');
+    doc.text('Score: ' + s.score + '/10', W - margin - 2, y + 6.5, { align: 'right' });
+    y += 13;
+
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(136, 153, 187);
+    doc.text('Q:', margin, y);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(200, 212, 232);
+    const qL = doc.splitTextToSize(s.question, col - 8);
+    doc.text(qL, margin + 6, y); y += qL.length * 4.5 + 3;
+
+    const sub = [{ l: 'Relevance', v: s.relevance }, { l: 'Clarity', v: s.clarity }, { l: 'Confidence', v: s.confidence }, { l: 'Words', v: s.words }];
+    sub.forEach((ss, ii) => {
+      const sx = margin + ii * (col / 4);
+      doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(136, 153, 187);
+      doc.text(ss.l, sx, y);
+      doc.setFont('helvetica', 'bold'); doc.setTextColor(232, 237, 248);
+      doc.text(String(ss.v ?? '?'), sx, y + 4.5);
+    });
+    y += 10;
+
+    if (s.summary) {
+      checkPage(10); doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(136, 153, 187);
+      const sl = doc.splitTextToSize('"' + s.summary + '"', col);
+      doc.text(sl, margin, y); y += sl.length * 4 + 3;
+    }
+    if (s.strengths && s.strengths.length) {
+      checkPage(12); doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 212, 170);
+      doc.text('Strengths:', margin, y);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(180, 200, 180);
+      const stl = doc.splitTextToSize(s.strengths.join(' | '), col - 22);
+      doc.text(stl, margin + 22, y); y += Math.max(stl.length * 4, 5) + 2;
+    }
+    if (s.improvements && s.improvements.length) {
+      checkPage(12); doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 165, 0);
+      doc.text('Improve:', margin, y);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(200, 180, 150);
+      const itl = doc.splitTextToSize(s.improvements.join(' | '), col - 22);
+      doc.text(itl, margin + 22, y); y += Math.max(itl.length * 4, 5) + 2;
+    }
+    if (s.betterAnswer) {
+      checkPage(16); doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(124, 109, 250);
+      doc.text('Better answer:', margin, y); y += 4.5;
+      doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 175, 220);
+      const bal = doc.splitTextToSize('"' + s.betterAnswer + '"', col);
+      doc.text(bal, margin, y); y += bal.length * 4 + 3;
+    }
+    doc.setDrawColor(30, 37, 53); doc.setLineWidth(0.4);
+    doc.line(margin, y, W - margin, y); y += 8;
+  });
+
+  // Footer
+  const pc = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pc; p++) {
+    doc.setPage(p); doc.setFontSize(7); doc.setTextColor(80, 90, 110);
+    doc.text('AI Voice Interview Coach  |  Page ' + p + ' of ' + pc, W / 2, 290, { align: 'center' });
+  }
+  doc.save('interview-report-' + new Date().toISOString().slice(0, 10) + '.pdf');
+}
+
+
 
 // ─── Shared Styles ────────────────────────────────────────────────────────────
 const S = {
@@ -221,6 +419,166 @@ function HistoryCard({ item, index, onDelete }) {
   );
 }
 
+// ─── Question Set Picker Screen ──────────────────────────────────────────────
+function QuestionSetPicker({ onSelect, onBack }) {
+  const [customQuestions, setCustomQuestions] = useState(loadCustomQuestions);
+  const [newQ, setNewQ] = useState("");
+  const [editIdx, setEditIdx] = useState(null);
+  const [editVal, setEditVal] = useState("");
+  const [activeTab, setActiveTab] = useState("presets");
+
+  const addQuestion = () => {
+    if (!newQ.trim()) return;
+    const updated = [...customQuestions, newQ.trim()];
+    setCustomQuestions(updated);
+    saveCustomQuestions(updated);
+    setNewQ("");
+  };
+
+  const deleteQuestion = (i) => {
+    const updated = customQuestions.filter((_, idx) => idx !== i);
+    setCustomQuestions(updated);
+    saveCustomQuestions(updated);
+  };
+
+  const saveEdit = (i) => {
+    if (!editVal.trim()) return;
+    const updated = customQuestions.map((q, idx) => idx === i ? editVal.trim() : q);
+    setCustomQuestions(updated);
+    saveCustomQuestions(updated);
+    setEditIdx(null);
+  };
+
+  const inputStyle = {
+    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: 10, padding: "11px 14px", color: "#e8edf8", fontSize: 14,
+    fontFamily: "'DM Sans', sans-serif", outline: "none", width: "100%",
+  };
+  const tabStyle = (active) => ({
+    padding: "9px 20px", borderRadius: 10, border: "none", cursor: "pointer",
+    fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: 14,
+    background: active ? "rgba(0,212,170,0.15)" : "transparent",
+    color: active ? "#00d4aa" : "#8899bb",
+    borderBottom: active ? "2px solid #00d4aa" : "2px solid transparent",
+    transition: "all 0.2s ease",
+  });
+
+  return (
+    <div style={S.app}>
+      <GlobalStyles />
+      <div style={S.glow} />
+      <div style={S.container}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
+          <button style={{ ...S.btnSecondary, padding: "8px 16px", fontSize: 14 }} onClick={onBack}>← Back</button>
+          <div style={S.badge}>🎯 Choose Question Set</div>
+          <div style={{ width: 80 }} />
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 4, marginBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: 0 }}>
+          <button style={tabStyle(activeTab === "presets")} onClick={() => setActiveTab("presets")}>📚 Preset Sets</button>
+          <button style={tabStyle(activeTab === "custom")} onClick={() => setActiveTab("custom")}>✏️ My Custom Set</button>
+        </div>
+
+        {activeTab === "presets" && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
+            {Object.entries(QUESTION_SETS).filter(([k]) => k !== "custom").map(([key, set]) => (
+              <div key={key} style={{ ...S.card, cursor: "pointer", border: "1px solid rgba(255,255,255,0.07)", transition: "border-color 0.2s" }}
+                onClick={() => onSelect(key, set.questions)}
+                onMouseEnter={e => e.currentTarget.style.borderColor = set.color + "55"}
+                onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"}
+              >
+                <div style={{ fontSize: 36, marginBottom: 10 }}>{set.icon}</div>
+                <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 6, color: set.color }}>{set.label}</div>
+                <div style={{ color: "#8899bb", fontSize: 13, marginBottom: 14 }}>{set.questions.length} questions</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  {set.questions.slice(0, 3).map((q, i) => (
+                    <div key={i} style={{ fontSize: 12, color: "#8899bb", background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "5px 8px", lineHeight: 1.3 }}>
+                      {q.length > 60 ? q.slice(0, 57) + "..." : q}
+                    </div>
+                  ))}
+                  {set.questions.length > 3 && (
+                    <div style={{ fontSize: 12, color: "#8899bb", textAlign: "center", paddingTop: 2 }}>+{set.questions.length - 3} more...</div>
+                  )}
+                </div>
+                <button style={{ ...S.btnPrimary, marginTop: 16, width: "100%", background: `linear-gradient(135deg, ${set.color}, ${set.color}aa)` }}>
+                  Start This Set →
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === "custom" && (
+          <div>
+            <div style={S.card}>
+              <div style={S.label}>Add Your Own Question</div>
+              <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+                <input
+                  style={inputStyle}
+                  placeholder="e.g. How do you handle code reviews?"
+                  value={newQ}
+                  onChange={e => setNewQ(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && addQuestion()}
+                />
+                <button style={{ ...S.btnPrimary, padding: "11px 20px", whiteSpace: "nowrap" }} onClick={addQuestion}>+ Add</button>
+              </div>
+            </div>
+
+            {customQuestions.length === 0 ? (
+              <div style={{ ...S.card, textAlign: "center", padding: "48px 24px" }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>✏️</div>
+                <p style={{ color: "#8899bb" }}>No custom questions yet.<br />Add your first one above!</p>
+              </div>
+            ) : (
+              <>
+                <div style={S.label}>{customQuestions.length} question{customQuestions.length !== 1 ? "s" : ""} in your set</div>
+                {customQuestions.map((q, i) => (
+                  <div key={i} style={{ ...S.card, marginBottom: 10, padding: "14px 18px" }}>
+                    {editIdx === i ? (
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <input
+                          style={{ ...inputStyle, flex: 1 }}
+                          value={editVal}
+                          onChange={e => setEditVal(e.target.value)}
+                          onKeyDown={e => e.key === "Enter" && saveEdit(i)}
+                          autoFocus
+                        />
+                        <button style={{ ...S.btnPrimary, padding: "8px 14px", fontSize: 13 }} onClick={() => saveEdit(i)}>Save</button>
+                        <button style={{ ...S.btnSecondary, padding: "8px 14px", fontSize: 13 }} onClick={() => setEditIdx(null)}>Cancel</button>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+                        <div style={{ display: "flex", gap: 10, alignItems: "flex-start", flex: 1 }}>
+                          <span style={{ ...S.badge, fontSize: 10, flexShrink: 0 }}>Q{i + 1}</span>
+                          <span style={{ fontSize: 14, color: "#c8d4e8", lineHeight: 1.5 }}>{q}</span>
+                        </div>
+                        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                          <button style={{ ...S.btnSecondary, padding: "5px 10px", fontSize: 12 }} onClick={() => { setEditIdx(i); setEditVal(q); }}>✏️</button>
+                          <button style={S.btnDanger} onClick={() => deleteQuestion(i)}>🗑</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div style={{ marginTop: 16 }}>
+                  <button
+                    style={{ ...S.btnPrimary, opacity: customQuestions.length === 0 ? 0.5 : 1 }}
+                    disabled={customQuestions.length === 0}
+                    onClick={() => onSelect("custom", customQuestions)}
+                  >
+                    Start Custom Practice ({customQuestions.length} questions) →
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Dashboard Screen ─────────────────────────────────────────────────────────
 function DashboardScreen({ history, onClearAll, onBack }) {
   const [localHistory, setLocalHistory] = useState(history);
@@ -249,7 +607,17 @@ function DashboardScreen({ history, onClearAll, onBack }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
           <button style={{ ...S.btnSecondary, padding: "8px 16px", fontSize: 14 }} onClick={onBack}>← Back</button>
           <div style={S.badge}>📊 Progress Dashboard</div>
-          {localHistory.length > 0 && <button style={S.btnDanger} onClick={onClearAll}>Clear All</button>}
+          <div style={{ display: "flex", gap: 8 }}>
+            {localHistory.length > 0 && (
+              <button
+                style={{ background: "rgba(0,212,170,0.1)", border: "1px solid rgba(0,212,170,0.25)", borderRadius: 10, padding: "8px 16px", color: "#00d4aa", fontWeight: 600, fontSize: 13, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+                onClick={() => exportToPDF(localHistory, streak, avgScore)}
+              >
+                ⬇ Export PDF
+              </button>
+            )}
+            {localHistory.length > 0 && <button style={S.btnDanger} onClick={onClearAll}>Clear All</button>}
+          </div>
         </div>
 
         {localHistory.length === 0 ? (
@@ -333,6 +701,8 @@ export default function VoiceInterviewCoach() {
   const [timer, setTimer] = useState(0);
   const [history, setHistory] = useState(loadHistory);
   const [supported, setSupported] = useState(true);
+  const [activeSetKey, setActiveSetKey] = useState("frontend");
+  const [activeQuestions, setActiveQuestions] = useState(QUESTION_SETS.frontend.questions);
 
   const recognitionRef = useRef(null);
   const timerRef = useRef(null);
@@ -377,12 +747,12 @@ export default function VoiceInterviewCoach() {
     if (!transcript.trim()) return;
     setIsAnalyzing(true);
     setScreen("feedback");
-    const result = await getAIFeedback(INTERVIEW_QUESTIONS[currentQ], transcript);
+    const result = await getAIFeedback(activeQuestions[currentQ], transcript);
     const fillers = countFillerWords(transcript);
     const words = wordCount(transcript);
     const entry = {
       id: Date.now(), date: new Date().toISOString(),
-      question: INTERVIEW_QUESTIONS[currentQ], answer: transcript,
+      question: activeQuestions[currentQ], answer: transcript,
       score: result?.score ?? 0, relevance: result?.relevance ?? 0,
       clarity: result?.clarity ?? 0, confidence: result?.confidence ?? 0,
       strengths: result?.strengths ?? [], improvements: result?.improvements ?? [],
@@ -396,11 +766,15 @@ export default function VoiceInterviewCoach() {
     setIsAnalyzing(false);
   };
 
-  const nextQuestion = () => { setFeedback(null); setTranscript(""); setCurrentQ(q => (q+1) % INTERVIEW_QUESTIONS.length); setScreen("interview"); };
+  const nextQuestion = () => { setFeedback(null); setTranscript(""); setCurrentQ(q => (q+1) % activeQuestions.length); setScreen("interview"); };
+  const startSet = (key, questions) => { setActiveSetKey(key); setActiveQuestions(questions); setCurrentQ(0); setFeedback(null); setTranscript(""); setScreen("interview"); };
   const clearHistory = () => { setHistory([]); saveHistory([]); setScreen("home"); };
 
   const streak = calcStreak(history);
   const avgScore = history.length ? (history.reduce((a, b) => a + (b.score || 0), 0) / history.length).toFixed(1) : null;
+
+  // Question Picker
+  if (screen === "picker") return <QuestionSetPicker onSelect={startSet} onBack={() => setScreen("home")} />;
 
   // Dashboard
   if (screen === "dashboard") return <DashboardScreen history={history} onClearAll={clearHistory} onBack={() => setScreen("home")} />;
@@ -446,7 +820,7 @@ export default function VoiceInterviewCoach() {
           )}
 
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 48 }}>
-            <button style={S.btnPrimary} onClick={() => setScreen("interview")}>Start Practice →</button>
+            <button style={S.btnPrimary} onClick={() => setScreen("picker")}>Start Practice →</button>
             <button style={S.btnSecondary} onClick={() => setScreen("dashboard")}>
               📊 Dashboard {history.length > 0 && `(${history.length} sessions)`}
             </button>
@@ -478,21 +852,27 @@ export default function VoiceInterviewCoach() {
       <div style={S.glow} />
       <div style={S.container}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
-          <button style={{ ...S.btnSecondary, padding: "8px 16px", fontSize: 14 }} onClick={() => setScreen("home")}>← Back</button>
-          <div style={S.badge}>Question {currentQ + 1} of {INTERVIEW_QUESTIONS.length}</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button style={{ ...S.btnSecondary, padding: "8px 16px", fontSize: 14 }} onClick={() => setScreen("home")}>← Back</button>
+            <button style={{ ...S.btnSecondary, padding: "8px 12px", fontSize: 12 }} onClick={() => setScreen("picker")}>🔄 Change Set</button>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+            <div style={S.badge}>{QUESTION_SETS[activeSetKey]?.icon || "✏️"} {QUESTION_SETS[activeSetKey]?.label || "Custom"}</div>
+            <div style={{ fontSize: 12, color: "#8899bb" }}>Question {currentQ + 1} of {activeQuestions.length}</div>
+          </div>
           <div style={{ fontFamily: "'DM Mono', monospace", color: isRecording ? "#ff4757" : "#8899bb", fontSize: 18 }}>
             {isRecording ? `⏺ ${formatTime(timer)}` : formatTime(timer)}
           </div>
         </div>
 
         <div style={{ height: 3, background: "#1e2535", borderRadius: 2, marginBottom: 32 }}>
-          <div style={{ height: "100%", borderRadius: 2, background: "#00d4aa", width: `${((currentQ+1)/INTERVIEW_QUESTIONS.length)*100}%`, transition: "width 0.5s ease" }} />
+          <div style={{ height: "100%", borderRadius: 2, background: "#00d4aa", width: `${((currentQ+1)/activeQuestions.length)*100}%`, transition: "width 0.5s ease" }} />
         </div>
 
         <div style={{ ...S.card, borderColor: "rgba(0,212,170,0.2)", marginBottom: 24 }}>
           <div style={S.label}>Your Question</div>
           <p style={{ fontSize: "clamp(1.1rem, 2.5vw, 1.4rem)", fontFamily: "'DM Serif Display', serif", lineHeight: 1.5 }}>
-            {INTERVIEW_QUESTIONS[currentQ]}
+            {activeQuestions[currentQ]}
           </p>
         </div>
 
@@ -608,6 +988,12 @@ export default function VoiceInterviewCoach() {
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <button style={S.btnPrimary} onClick={nextQuestion}>Next Question →</button>
               <button style={S.btnSecondary} onClick={() => { setFeedback(null); setTranscript(""); setScreen("interview"); }}>Try Again</button>
+              <button
+                style={{ background: "rgba(0,212,170,0.1)", border: "1px solid rgba(0,212,170,0.25)", borderRadius: 12, padding: "13px 20px", color: "#00d4aa", fontWeight: 600, fontSize: 15, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+                onClick={() => exportToPDF(history, streak, avgScore)}
+              >
+                ⬇ Export PDF
+              </button>
             </div>
           </div>
         ) : (
