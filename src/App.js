@@ -16,7 +16,7 @@ const FILLER_WORDS = ["um", "uh", "like", "you know", "basically", "literally", 
 
 // ─── Groq API Call ─────────────────────────────────────────────────────────────
 async function getAIFeedback(question, answer) {
-  const GROQ_API_KEY = "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"; // 🔑 Replace with your free key from console.groq.com
+  const GROQ_API_KEY = process.env.REACT_APP_GROQ_API_KEY; // 🔑 Replace with your free key from console.groq.com
 
   const prompt = `You are an expert interview coach. Analyze this interview answer and give structured feedback.
 
