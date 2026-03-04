@@ -477,6 +477,9 @@ react-window — reduced render time by </span><span style="color:var(--green);t
   <div class="rm done">[x] Progress dashboard + streak tracker</div>
   <div class="rm done">[x] PDF export report</div>
   <div class="rm done">[x] Custom question sets builder</div>
+  <div class="rm todo">[ ] TTS playback for better answers</div>
+  <div class="rm todo">[ ] Shareable result card</div>
+  <div class="rm todo">[ ] Company-specific question packs</div>
 </div>
 
 <hr/>
