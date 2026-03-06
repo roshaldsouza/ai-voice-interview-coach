@@ -67,9 +67,6 @@ Your answer is transcribed live via **Web Speech API**, then sent to **Llama 3.3
 - [x] Progress dashboard + streak tracker
 - [x] PDF export report
 - [x] Custom question sets builder
-- [ ] TTS playback for better answers
-- [ ] Shareable result card
-- [ ] Company-specific question packs
 
 ---
 
