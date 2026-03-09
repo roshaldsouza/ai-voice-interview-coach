@@ -101,7 +101,7 @@ function calcStreak(history) {
 
 // ─── Groq API ─────────────────────────────────────────────────────────────────
 async function getAIFeedback(question, answer) {
-  const GROQ_API_KEY = process.env.REACT_APP_GROQ_API_KEY;
+  
   const prompt = `You are an expert interview coach. Analyze this interview answer and give structured feedback.
 
 Question: "${question}"
@@ -119,9 +119,9 @@ Respond ONLY in this exact JSON format (no markdown, no extra text):
   "summary": "<one sentence overall assessment>"
 }`;
   try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("/api/chat", {
       method: "POST",
-      headers: { Authorization: `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },  
       body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "user", content: prompt }], temperature: 0.4, max_tokens: 600 }),
     });
     const data = await response.json();
